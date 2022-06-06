@@ -1,0 +1,118 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+# Librerías
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidytext)
+library(wordcloud)
+library(wordcloud2)
+```
+
+
+```{r, message=FALSE}
+ds <- read_csv("../Data/BD_Comercio_Exterior_2020.csv")
+ds
+```
+
+
+# Tokenizing and cleaning data
+
+<!-- Some natural language processing (NLP) vocabulary: -->
+<!-- Bag of words: Words in a document are independent -->
+<!-- Every separate body of text is a document -->
+<!-- Every unique word is a term -->
+<!-- Every occurrence of a term is a token -->
+<!-- Creating a bag of words is called tokenizing -->
+
+
+
+```{r}
+tidy_ds <- ds %>% 
+  # Tokenize data
+  unnest_tokens(word, descripcion) 
+
+tidy_ds %>% 
+  # Compute word counts
+  count(word) %>% 
+  # Arrange the counts in descending order
+  arrange(desc(n))
+```
+
+
+```{r}
+sp_stop_words <- read_csv("../Data/spanish_stop_words.csv")
+```
+
+
+```{r}
+tidy_ds <- ds %>% 
+  # Tokenize data
+  unnest_tokens(word, descripcion) %>% 
+  # Remove stop words
+  anti_join(sp_stop_words)
+
+  tidy_ds %>% 
+  # Compute word counts
+  count(word) %>% 
+  # Arrange the counts in descending order
+  arrange(desc(n))
+```
+
+
+
+<!--  -->
+
+```{r}
+word_counts <- tidy_ds %>% 
+  count(word) %>% 
+  # Keep terms that occur more than 15000 times
+  filter(n > 15000) %>% 
+  # Reorder word as an ordered factor by word counts
+  mutate(word = fct_reorder(word, n))
+
+# Plot the new word column with type factor
+ggplot(word_counts, aes(x=word, y = n)) +
+  geom_col() +
+  coord_flip() +
+  ggtitle("Conteo de palabras")
+```
+
+
+
+```{r}
+# Compute word counts and assign to word_counts
+word_counts <- tidy_ds %>% 
+  count(word)
+
+set.seed(1)
+wordcloud(
+  # Assign the word column to words
+  words = word_counts$word, 
+  # Assign the count column to freq
+  freq = word_counts$n, 
+  max.words = 30,
+  colors=brewer.pal(8, "Dark2")
+)
+```
+
+
+
+```{r}
+word_counts <- tidy_ds %>% 
+  count(word)
+
+set.seed(1)
+wordcloud2(data = word_counts, size = .7, minRotation = -0.0, maxRotation = -0.0, rotateRatio = 2)
+
+```
+
+
+
+
+
+
