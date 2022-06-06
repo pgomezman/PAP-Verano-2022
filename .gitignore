@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Datos
+Data/BD_Comercio_Exterior_2020.csv
